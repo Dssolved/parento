@@ -1,0 +1,7 @@
+[
+  { "title": "Подготовка к беременности", "description": "Всё что нужно знать до зачатия", "stage": "planning", "is_premium": false },
+  { "title": "Питание во время беременности", "description": "Рацион по триместрам на основе исследований", "stage": "pregnancy", "is_premium": false },
+  { "title": "Первый месяц с малышом", "description": "Базовый уход, режим, сон", "stage": "newborn", "is_premium": false },
+  { "title": "Психология раннего развития", "description": "Как формируется привязанность и характер", "stage": "newborn", "is_premium": true },
+  { "title": "Режим сна новорождённого", "description": "Методики и научный подход", "stage": "newborn", "is_premium": true }
+]

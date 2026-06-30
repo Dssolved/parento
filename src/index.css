@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: light;
+    overflow-x: hidden;
+  }
+
+  body {
+    margin: 0;
+    @apply overflow-x-hidden bg-gray-50 font-sans text-gray-600 antialiased;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  a {
+    @apply transition-colors;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-3 sm:px-6 lg:px-8;
+  }
+
+  .form-input {
+    @apply w-full rounded-lg border border-gray-200 bg-white px-4 py-3 text-gray-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100;
+  }
+
+  .form-label {
+    @apply text-sm font-medium text-gray-700;
+  }
+}
