@@ -7,6 +7,7 @@ import Footer from './components/layout/Footer'
 
 const Landing = lazy(() => import('./pages/Landing'))
 const About = lazy(() => import('./pages/About'))
+const Feedback = lazy(() => import('./pages/Feedback'))
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
 const Onboarding = lazy(() => import('./pages/Onboarding'))
@@ -52,6 +53,7 @@ export default function App() {
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/about" element={<About />} />
+                <Route path="/feedback" element={<Feedback />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/onboarding" element={<PrivateRoute><Onboarding /></PrivateRoute>} />

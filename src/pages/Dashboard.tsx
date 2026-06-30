@@ -4,10 +4,12 @@ import {
   CheckCircle2,
   Crown,
   Library,
+  MessageSquareText,
   Sparkles,
   Target,
+  X,
 } from 'lucide-react'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import CourseCard from '../components/course/CourseCard'
 import Card from '../components/ui/Card'
@@ -46,8 +48,22 @@ interface MyCourseCard {
   buttonText: string
 }
 
+const FEEDBACK_DISMISSED_KEY = 'parento_feedback_prompt_dismissed_at'
+const FEEDBACK_COMPLETED_KEY = 'parento_feedback_prompt_completed'
+const FEEDBACK_DISMISS_MS = 7 * 24 * 60 * 60 * 1000
+
 function getProgressPercent(completedCount: number, lessonsCount: number) {
   return lessonsCount ? Math.round((completedCount / lessonsCount) * 100) : 0
+}
+
+function getInitialFeedbackPromptState() {
+  if (typeof window === 'undefined') return false
+
+  const isCompleted = window.localStorage.getItem(FEEDBACK_COMPLETED_KEY) === 'true'
+  if (isCompleted) return true
+
+  const dismissedAt = Number(window.localStorage.getItem(FEEDBACK_DISMISSED_KEY) ?? 0)
+  return dismissedAt > 0 && Date.now() - dismissedAt < FEEDBACK_DISMISS_MS
 }
 
 function buildLearningRoute(
@@ -250,6 +266,13 @@ export default function Dashboard() {
     [allCourses, allLessons, progress, subscription],
   )
   const hasMyCourses = myCourses.active.length > 0 || myCourses.completed.length > 0
+  const [isFeedbackPromptHidden, setIsFeedbackPromptHidden] = useState(getInitialFeedbackPromptState)
+  const shouldShowFeedbackPrompt = completedLessonsCount >= 3 && !isFeedbackPromptHidden
+
+  const dismissFeedbackPrompt = () => {
+    window.localStorage.setItem(FEEDBACK_DISMISSED_KEY, String(Date.now()))
+    setIsFeedbackPromptHidden(true)
+  }
 
   return (
     <section className="container-page py-6 sm:py-10">
@@ -528,6 +551,60 @@ export default function Dashboard() {
           <CourseCard key={course.id} course={course} userSubscription={subscription} />
         ))}
       </div>
+
+      {shouldShowFeedbackPrompt ? (
+        <Card className="mt-10 border-emerald-200 bg-emerald-50 p-5 sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-white text-emerald-700">
+                <MessageSquareText size={20} aria-hidden="true" />
+              </div>
+              <div>
+                <p className="font-semibold text-emerald-950">Помогите улучшить Parento</p>
+                <p className="mt-1 text-sm leading-6 text-emerald-800">
+                  Вы уже прошли несколько уроков. Расскажите, что было полезно, а что стоит доработать.
+                </p>
+              </div>
+            </div>
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+              <Link
+                to="/feedback?from=/dashboard"
+                className="inline-flex min-h-10 items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-medium text-white hover:bg-emerald-700"
+              >
+                Оставить отзыв
+              </Link>
+              <button
+                type="button"
+                onClick={dismissFeedbackPrompt}
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-medium text-emerald-800 hover:bg-emerald-100"
+              >
+                <X size={16} aria-hidden="true" />
+                Не сейчас
+              </button>
+            </div>
+          </div>
+        </Card>
+      ) : (
+        <Card className="mt-10 p-5 sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <MessageSquareText className="mt-0.5 size-6 shrink-0 text-emerald-600" aria-hidden="true" />
+              <div>
+                <p className="font-semibold text-gray-900">Есть идея или заметили неудобство?</p>
+                <p className="mt-1 text-sm leading-6 text-gray-500">
+                  Оставьте короткий отзыв, чтобы мы понимали, что улучшать дальше.
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/feedback?from=/dashboard"
+              className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-800 hover:bg-gray-200"
+            >
+              Оставить отзыв
+            </Link>
+          </div>
+        </Card>
+      )}
 
     </section>
   )

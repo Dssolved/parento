@@ -1,4 +1,4 @@
-import { AlertTriangle, Crown, LogOut, Trash2, UserRound } from 'lucide-react'
+import { AlertTriangle, Crown, LogOut, MessageSquareText, Trash2, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Button from '../components/ui/Button'
@@ -178,6 +178,26 @@ export default function Profile() {
             <h2 className="text-2xl font-semibold text-gray-900">Прогресс</h2>
             <p className="mt-2 text-gray-500">Количество уроков, которые вы отметили как пройденные.</p>
             <p className="mt-6 text-5xl font-semibold text-emerald-700">{progress.length}</p>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-start gap-3">
+              <div className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700">
+                <MessageSquareText size={20} aria-hidden="true" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900">Помочь улучшить Parento</h2>
+                <p className="mt-2 text-gray-500">
+                  Расскажите, что было удобно, где возникли сложности и чего не хватило.
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/feedback?from=/profile"
+              className="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg bg-gray-100 px-5 font-medium text-gray-800 hover:bg-gray-200"
+            >
+              Оставить отзыв
+            </Link>
           </Card>
 
           <Card className="border-rose-100 p-6">

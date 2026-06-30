@@ -61,3 +61,14 @@ export interface Progress {
   lesson_id: string
   completed_at: string
 }
+
+export type FeedbackType = 'general' | 'bug' | 'ux' | 'content' | 'idea'
+
+export interface FeedbackInsert {
+  user_id?: string | null
+  feedback_type: FeedbackType
+  rating?: number | null
+  message: string
+  contact?: string | null
+  path?: string | null
+}

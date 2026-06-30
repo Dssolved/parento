@@ -1,5 +1,5 @@
 import { BookOpenCheck } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 const footerGroups = [
   {
@@ -21,6 +21,7 @@ const footerGroups = [
   {
     title: 'Документы',
     links: [
+      { label: 'Обратная связь', to: '/feedback' },
       { label: 'Дисклеймер', to: '/legal/disclaimer' },
       { label: 'Конфиденциальность', to: '/legal/privacy' },
       { label: 'Условия', to: '/legal/terms' },
@@ -30,6 +31,8 @@ const footerGroups = [
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
+  const location = useLocation()
+  const feedbackPath = `/feedback?from=${encodeURIComponent(location.pathname)}`
 
   return (
     <footer className="border-t border-emerald-100 bg-emerald-950 text-emerald-50">
@@ -53,7 +56,7 @@ export default function Footer() {
                 <h2 className="text-sm font-semibold text-white">{group.title}</h2>
                 <div className="mt-3 grid gap-2 text-sm">
                   {group.links.map((link) => (
-                    <Link key={link.to} to={link.to} className="text-emerald-100 hover:text-white">
+                    <Link key={link.to} to={link.to === '/feedback' ? feedbackPath : link.to} className="text-emerald-100 hover:text-white">
                       {link.label}
                     </Link>
                   ))}
