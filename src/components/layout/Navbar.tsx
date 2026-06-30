@@ -154,6 +154,13 @@ export default function Navbar() {
                   Войти
                 </Link>
                 <Link
+                  to="/about"
+                  onClick={closeMenu}
+                  className="inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                >
+                  О проекте
+                </Link>
+                <Link
                   to="/register"
                   onClick={closeMenu}
                   className="inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-medium text-white hover:bg-emerald-700"

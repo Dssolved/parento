@@ -5,6 +5,7 @@ const footerGroups = [
   {
     title: 'Обучение',
     links: [
+      { label: 'О проекте', to: '/about' },
       { label: 'Моё обучение', to: '/dashboard' },
       { label: 'Каталог курсов', to: '/catalog' },
       { label: 'Premium', to: '/subscribe' },
@@ -15,6 +16,14 @@ const footerGroups = [
     links: [
       { label: 'Профиль', to: '/profile' },
       { label: 'Контекст', to: '/onboarding' },
+    ],
+  },
+  {
+    title: 'Документы',
+    links: [
+      { label: 'Дисклеймер', to: '/legal/disclaimer' },
+      { label: 'Конфиденциальность', to: '/legal/privacy' },
+      { label: 'Условия', to: '/legal/terms' },
     ],
   },
 ]
@@ -38,7 +47,7 @@ export default function Footer() {
             </p>
           </div>
 
-          <nav className="grid gap-6 sm:grid-cols-2" aria-label="Навигация в подвале">
+          <nav className="grid gap-6 sm:grid-cols-3" aria-label="Навигация в подвале">
             {footerGroups.map((group) => (
               <div key={group.title}>
                 <h2 className="text-sm font-semibold text-white">{group.title}</h2>

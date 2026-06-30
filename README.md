@@ -55,6 +55,28 @@ alter table lessons add column if not exists is_published boolean;
 
 Полная миграция лежит в `supabase/add-publishing.sql`.
 
+Если база уже создана до появления удаления аккаунта из профиля, выполните миграцию:
+
+```sql
+create or replace function public.delete_current_user()
+returns void
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'Not authenticated';
+  end if;
+
+  delete from auth.users
+  where id = auth.uid();
+end;
+$$;
+```
+
+Полная миграция лежит в `supabase/add-account-deletion.sql`.
+
 ## Проверки
 
 ```bash

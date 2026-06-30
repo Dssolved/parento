@@ -6,6 +6,7 @@ import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
 
 const Landing = lazy(() => import('./pages/Landing'))
+const About = lazy(() => import('./pages/About'))
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
 const Onboarding = lazy(() => import('./pages/Onboarding'))
@@ -16,6 +17,7 @@ const LessonPage = lazy(() => import('./pages/LessonPage'))
 const Subscribe = lazy(() => import('./pages/Subscribe'))
 const Profile = lazy(() => import('./pages/Profile'))
 const Admin = lazy(() => import('./pages/Admin'))
+const LegalPage = lazy(() => import('./pages/LegalPage'))
 
 function PageLoading() {
   return <div className="flex h-[60vh] items-center justify-center text-gray-500">Загрузка...</div>
@@ -49,6 +51,7 @@ export default function App() {
             <Suspense fallback={<PageLoading />}>
               <Routes>
                 <Route path="/" element={<Landing />} />
+                <Route path="/about" element={<About />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/onboarding" element={<PrivateRoute><Onboarding /></PrivateRoute>} />
@@ -59,6 +62,7 @@ export default function App() {
                 <Route path="/subscribe" element={<PrivateRoute><Subscribe /></PrivateRoute>} />
                 <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
                 <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
+                <Route path="/legal/:slug" element={<LegalPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>

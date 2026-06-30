@@ -1,4 +1,5 @@
-import { Crown, LogOut, UserRound } from 'lucide-react'
+import { AlertTriangle, Crown, LogOut, Trash2, UserRound } from 'lucide-react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
@@ -30,6 +31,10 @@ export default function Profile() {
   const navigate = useNavigate()
   const { user, profile, refreshProfile } = useAuth()
   const { data: progress = [] } = useProgress(user?.id ?? '')
+  const [deleteConfirmation, setDeleteConfirmation] = useState('')
+  const [deleteError, setDeleteError] = useState('')
+  const [deletingAccount, setDeletingAccount] = useState(false)
+  const canDeleteAccount = deleteConfirmation.trim().toUpperCase() === 'УДАЛИТЬ'
 
   const updateStage = async (stage: Stage) => {
     if (!user) return
@@ -44,6 +49,31 @@ export default function Profile() {
   }
 
   const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    navigate('/')
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!user || !canDeleteAccount || deletingAccount) return
+
+    const confirmed = window.confirm('Аккаунт и данные профиля будут удалены без возможности восстановления. Продолжить?')
+    if (!confirmed) return
+
+    setDeleteError('')
+    setDeletingAccount(true)
+
+    const { error } = await supabase.rpc('delete_current_user')
+
+    if (error) {
+      setDeleteError(
+        error.message.includes('Could not find the function')
+          ? 'Функция удаления еще не добавлена в Supabase. Выполните supabase/add-account-deletion.sql.'
+          : error.message,
+      )
+      setDeletingAccount(false)
+      return
+    }
+
     await supabase.auth.signOut()
     navigate('/')
   }
@@ -148,6 +178,43 @@ export default function Profile() {
             <h2 className="text-2xl font-semibold text-gray-900">Прогресс</h2>
             <p className="mt-2 text-gray-500">Количество уроков, которые вы отметили как пройденные.</p>
             <p className="mt-6 text-5xl font-semibold text-emerald-700">{progress.length}</p>
+          </Card>
+
+          <Card className="border-rose-100 p-6">
+            <div className="flex items-start gap-3">
+              <div className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-rose-50 text-rose-700">
+                <AlertTriangle size={20} aria-hidden="true" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900">Удаление аккаунта</h2>
+                <p className="mt-2 text-gray-500">
+                  Будут удалены аккаунт, профиль, выбранный этап, роль, подписка и прогресс по урокам. Это действие нельзя отменить.
+                </p>
+              </div>
+            </div>
+
+            <label className="mt-5 block space-y-2">
+              <span className="form-label">Введите УДАЛИТЬ для подтверждения</span>
+              <input
+                className="form-input"
+                value={deleteConfirmation}
+                onChange={(event) => setDeleteConfirmation(event.target.value)}
+                placeholder="УДАЛИТЬ"
+              />
+            </label>
+
+            {deleteError && <p className="mt-4 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">{deleteError}</p>}
+
+            <Button
+              className="mt-4"
+              variant="secondary"
+              onClick={handleDeleteAccount}
+              disabled={!canDeleteAccount}
+              isLoading={deletingAccount}
+            >
+              <Trash2 size={17} aria-hidden="true" />
+              Удалить аккаунт
+            </Button>
           </Card>
         </div>
       </div>
