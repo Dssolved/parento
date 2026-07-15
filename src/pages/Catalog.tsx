@@ -9,10 +9,13 @@ import { useCourses } from '../hooks/useCourses'
 import { useRecommendedCourses } from '../hooks/useRecommendedCourses'
 import { stageLabels } from '../lib/stages'
 import { isSupabaseConfigured } from '../lib/supabase'
+import { isTimelyForWeek } from '../lib/weekCalculations'
 import type { Course, Stage } from '../types/database'
 
 type AccessFilter = 'all' | 'free' | 'premium'
-type SortOption = 'newest' | 'free-first' | 'premium-first' | 'title'
+type SortOption = 'newest' | 'free-first' | 'premium-first' | 'title' | 'week'
+type WeekFilterMode = 'all' | 'mine' | 'manual'
+type WeekStage = 'pregnancy' | 'newborn'
 
 const stageFilters: Array<Stage | 'all'> = ['all', 'planning', 'pregnancy', 'newborn']
 
@@ -27,6 +30,16 @@ const sortLabels: Record<SortOption, string> = {
   'free-first': 'Сначала Free',
   'premium-first': 'Сначала Premium',
   title: 'По названию',
+  week: 'По неделе',
+}
+
+const weekRangeByStage: Record<WeekStage, { min: number; max: number }> = {
+  pregnancy: { min: 1, max: 42 },
+  newborn: { min: 0, max: 52 },
+}
+
+function isWeekStage(stage: Stage | 'all'): stage is WeekStage {
+  return stage === 'pregnancy' || stage === 'newborn'
 }
 
 function normalizeSearch(value: string) {
@@ -45,6 +58,25 @@ function matchesAccess(course: Course, access: AccessFilter) {
   return !course.is_premium
 }
 
+function matchesWeek(
+  course: Course,
+  mode: WeekFilterMode,
+  weekStage: WeekStage | null,
+  profileStage: Stage | null | undefined,
+  currentWeek: number | null,
+  manualWeek: number | null,
+) {
+  if (mode === 'all' || !weekStage) return true
+
+  if (mode === 'mine') {
+    if (profileStage !== weekStage || currentWeek == null) return true
+    return course.stage === weekStage && isTimelyForWeek(course, currentWeek)
+  }
+
+  if (manualWeek == null) return true
+  return isTimelyForWeek(course, manualWeek)
+}
+
 function sortCourses(courses: Course[], sort: SortOption) {
   return [...courses].sort((a, b) => {
     if (sort === 'title') {
@@ -59,6 +91,13 @@ function sortCourses(courses: Course[], sort: SortOption) {
       return Number(b.is_premium) - Number(a.is_premium)
     }
 
+    if (sort === 'week') {
+      if (a.week_from == null && b.week_from == null) return 0
+      if (a.week_from == null) return 1
+      if (b.week_from == null) return -1
+      return a.week_from - b.week_from
+    }
+
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   })
 }
@@ -69,25 +108,55 @@ export default function Catalog() {
   const [access, setAccess] = useState<AccessFilter>('all')
   const [sort, setSort] = useState<SortOption>('newest')
   const [search, setSearch] = useState('')
+  const [weekFilterMode, setWeekFilterMode] = useState<WeekFilterMode>('all')
+  const [manualWeek, setManualWeek] = useState<number | null>(null)
   const { data: courses = [], isLoading, error } = useCourses(stage)
   const { recommended, currentWeek } = useRecommendedCourses(profile, profile?.stage ?? 'all')
   const showHint = currentWeek == null && (profile?.stage === 'pregnancy' || profile?.stage === 'newborn')
   const normalizedSearch = normalizeSearch(search)
+
+  const weekStage: WeekStage | null = isWeekStage(stage) ? stage : null
+  const canUseMineFilter = weekStage != null && profile?.stage === weekStage && currentWeek != null
+
   const filteredCourses = useMemo(
     () =>
       sortCourses(
-        courses.filter((course) => matchesSearch(course, normalizedSearch) && matchesAccess(course, access)),
+        courses.filter(
+          (course) =>
+            matchesSearch(course, normalizedSearch) &&
+            matchesAccess(course, access) &&
+            matchesWeek(course, weekFilterMode, weekStage, profile?.stage, currentWeek, manualWeek),
+        ),
         sort,
       ),
-    [access, courses, normalizedSearch, sort],
+    [access, courses, currentWeek, manualWeek, normalizedSearch, profile?.stage, sort, weekFilterMode, weekStage],
   )
-  const hasActiveFilters = Boolean(normalizedSearch) || access !== 'all' || stage !== 'all' || sort !== 'newest'
+  const hasActiveFilters =
+    Boolean(normalizedSearch) || access !== 'all' || stage !== 'all' || sort !== 'newest' || weekFilterMode !== 'all'
 
   const resetFilters = () => {
     setStage('all')
     setAccess('all')
     setSort('newest')
     setSearch('')
+    setWeekFilterMode('all')
+    setManualWeek(null)
+  }
+
+  const handleStageChange = (nextStage: Stage | 'all') => {
+    setStage(nextStage)
+    if (!isWeekStage(nextStage)) {
+      setWeekFilterMode('all')
+      setManualWeek(null)
+    }
+  }
+
+  const handleSelectManualWeek = () => {
+    setWeekFilterMode('manual')
+    if (manualWeek == null && weekStage) {
+      const range = weekRangeByStage[weekStage]
+      setManualWeek(canUseMineFilter && currentWeek != null ? currentWeek : Math.round((range.min + range.max) / 2))
+    }
   }
 
   return (
@@ -199,7 +268,7 @@ export default function Catalog() {
                   key={filter}
                   variant={stage === filter ? 'primary' : 'secondary'}
                   size="sm"
-                  onClick={() => setStage(filter)}
+                  onClick={() => handleStageChange(filter)}
                 >
                   {stageLabels[filter]}
                 </Button>
@@ -223,6 +292,57 @@ export default function Catalog() {
             </div>
           </div>
         </div>
+
+        {weekStage && (
+          <div className="mt-5 border-t border-gray-100 pt-4">
+            <p className="form-label mb-2">Неделя</p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={weekFilterMode === 'all' ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setWeekFilterMode('all')}
+              >
+                Все недели
+              </Button>
+              <Button
+                variant={weekFilterMode === 'mine' ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setWeekFilterMode('mine')}
+                disabled={!canUseMineFilter}
+                title={
+                  canUseMineFilter
+                    ? undefined
+                    : 'Доступно, если выбранный этап совпадает с вашим и в профиле указана дата'
+                }
+              >
+                Актуально для меня{canUseMineFilter ? ` (${currentWeek})` : ''}
+              </Button>
+              <Button
+                variant={weekFilterMode === 'manual' ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={handleSelectManualWeek}
+              >
+                Выбрать неделю
+              </Button>
+            </div>
+
+            {weekFilterMode === 'manual' && (
+              <div className="mt-4 flex items-center gap-4">
+                <input
+                  type="range"
+                  min={weekRangeByStage[weekStage].min}
+                  max={weekRangeByStage[weekStage].max}
+                  value={manualWeek ?? weekRangeByStage[weekStage].min}
+                  onChange={(event) => setManualWeek(Number(event.target.value))}
+                  className="w-full max-w-xs accent-emerald-600"
+                />
+                <span className="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
+                  {weekStage === 'pregnancy' ? `Неделя ${manualWeek}` : `${manualWeek} нед.`}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="mt-5 flex flex-col gap-3 border-t border-gray-100 pt-4 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between">
           <p>
