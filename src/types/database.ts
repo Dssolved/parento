@@ -16,6 +16,8 @@ export interface Profile {
   stage: Stage | null
   caregiver_role: CaregiverRole | null
   subscription: Subscription
+  due_date: string | null
+  birth_date: string | null
   created_at: string
 }
 
@@ -27,6 +29,8 @@ export interface ProfileInsert {
   stage?: Stage | null
   caregiver_role?: CaregiverRole | null
   subscription?: Subscription
+  due_date?: string | null
+  birth_date?: string | null
 }
 
 export interface Course {
@@ -37,6 +41,8 @@ export interface Course {
   is_premium: boolean
   is_published: boolean
   cover_url: string | null
+  week_from: number | null
+  week_to: number | null
   created_at: string
 }
 
@@ -50,6 +56,8 @@ export interface Lesson {
   order_index: number
   is_premium: boolean
   is_published: boolean
+  week_from: number | null
+  week_to: number | null
   created_at: string
 }
 

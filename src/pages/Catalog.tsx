@@ -1,10 +1,12 @@
-import { Search, SlidersHorizontal, X } from 'lucide-react'
+import { CalendarHeart, Search, SlidersHorizontal, Sparkles, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import CourseCard from '../components/course/CourseCard'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import { useAuth } from '../hooks/useAuth'
 import { useCourses } from '../hooks/useCourses'
+import { useRecommendedCourses } from '../hooks/useRecommendedCourses'
 import { stageLabels } from '../lib/stages'
 import { isSupabaseConfigured } from '../lib/supabase'
 import type { Course, Stage } from '../types/database'
@@ -68,6 +70,8 @@ export default function Catalog() {
   const [sort, setSort] = useState<SortOption>('newest')
   const [search, setSearch] = useState('')
   const { data: courses = [], isLoading, error } = useCourses(stage)
+  const { recommended, currentWeek } = useRecommendedCourses(profile, profile?.stage ?? 'all')
+  const showHint = currentWeek == null && (profile?.stage === 'pregnancy' || profile?.stage === 'newborn')
   const normalizedSearch = normalizeSearch(search)
   const filteredCourses = useMemo(
     () =>
@@ -99,6 +103,51 @@ export default function Catalog() {
           {profile?.stage ? `Ваш этап: ${stageLabels[profile.stage]}` : 'Этап можно выбрать в профиле'}
         </div>
       </div>
+
+      {currentWeek != null && recommended.length > 0 && (
+        <div className="mt-8 rounded-lg border border-emerald-100 bg-emerald-50/50 p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-emerald-700">
+              <Sparkles size={16} aria-hidden="true" />
+              Актуально для вас сейчас
+            </p>
+            <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-sm font-medium text-emerald-700 shadow-sm">
+              <CalendarHeart size={14} aria-hidden="true" />
+              {profile?.stage === 'pregnancy' ? `${currentWeek}-я неделя` : `${currentWeek} нед. малышу`}
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-gray-500">
+            Курсы, которые важны именно на вашем сроке. Остальной каталог — ниже.
+          </p>
+          <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {recommended.map((course) => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                userSubscription={profile?.subscription ?? 'free'}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {showHint && (
+        <Card className="mt-8 flex flex-wrap items-center gap-4 p-5">
+          <div className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-emerald-100 bg-emerald-50 text-emerald-700">
+            <CalendarHeart size={20} aria-hidden="true" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-gray-900">Укажите дату в профиле, чтобы видеть персональные рекомендации</p>
+            <p className="mt-1 text-sm text-gray-500">Мы подберём курсы, актуальные именно для вашей недели.</p>
+          </div>
+          <Link
+            to="/profile"
+            className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 px-4 font-medium text-gray-800 hover:bg-gray-200"
+          >
+            Заполнить дату
+          </Link>
+        </Card>
+      )}
 
       <Card className="mt-8 p-4 sm:p-5">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_14rem]">

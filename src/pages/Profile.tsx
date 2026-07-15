@@ -1,14 +1,20 @@
-import { AlertTriangle, Crown, LogOut, MessageSquareText, Trash2, UserRound } from 'lucide-react'
-import { useState } from 'react'
+import { AlertTriangle, CalendarHeart, Crown, LogOut, MessageSquareText, Trash2, UserRound } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
+import DatePicker from '../components/ui/DatePicker'
 import { useAuth } from '../hooks/useAuth'
 import { useProgress } from '../hooks/useProgress'
 import { caregiverRoleOptions, getCaregiverRoleLabel } from '../lib/caregiverRoles'
 import { getStageLabel, stageOptions } from '../lib/stages'
 import { supabase } from '../lib/supabase'
+import { getCurrentUserWeek } from '../lib/weekCalculations'
 import type { CaregiverRole, Stage } from '../types/database'
+
+function toISODate(date: Date) {
+  return date.toISOString().slice(0, 10)
+}
 
 function getInitials(fullName: string | null | undefined, email: string | null | undefined) {
   const nameParts = fullName
@@ -36,6 +42,22 @@ export default function Profile() {
   const [deletingAccount, setDeletingAccount] = useState(false)
   const canDeleteAccount = deleteConfirmation.trim().toUpperCase() === 'УДАЛИТЬ'
 
+  const [dueDate, setDueDate] = useState(profile?.due_date ?? '')
+  const [birthDate, setBirthDate] = useState(profile?.birth_date ?? '')
+  const [savingDate, setSavingDate] = useState(false)
+  const [dateError, setDateError] = useState('')
+
+  useEffect(() => {
+    setDueDate(profile?.due_date ?? '')
+    setBirthDate(profile?.birth_date ?? '')
+  }, [profile?.due_date, profile?.birth_date])
+
+  const today = toISODate(new Date())
+  const oneYearAgo = toISODate(new Date(new Date().setFullYear(new Date().getFullYear() - 1)))
+  const dueDateMin = toISODate(new Date(new Date().setDate(new Date().getDate() - 21)))
+  const dueDateMax = toISODate(new Date(new Date().setDate(new Date().getDate() + 294)))
+  const currentWeek = profile ? getCurrentUserWeek(profile) : null
+
   const updateStage = async (stage: Stage) => {
     if (!user) return
     await supabase.from('profiles').update({ stage }).eq('id', user.id)
@@ -46,6 +68,31 @@ export default function Profile() {
     if (!user) return
     await supabase.from('profiles').update({ caregiver_role: caregiverRole }).eq('id', user.id)
     await refreshProfile()
+  }
+
+  const saveDate = async () => {
+    if (!user || !profile) return
+
+    setDateError('')
+    setSavingDate(true)
+
+    const payload =
+      profile.stage === 'pregnancy'
+        ? { due_date: dueDate || null }
+        : profile.stage === 'newborn'
+          ? { birth_date: birthDate || null }
+          : {}
+
+    const { error: updateError } = await supabase.from('profiles').update(payload).eq('id', user.id)
+
+    if (updateError) {
+      setDateError(updateError.message)
+      setSavingDate(false)
+      return
+    }
+
+    await refreshProfile()
+    setSavingDate(false)
   }
 
   const handleSignOut = async () => {
@@ -148,6 +195,58 @@ export default function Profile() {
               ))}
             </div>
           </Card>
+
+          {(profile?.stage === 'pregnancy' || profile?.stage === 'newborn') && (
+            <Card className="p-6">
+              <div className="flex items-start gap-3">
+                <div className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border bg-emerald-50 text-emerald-700 border-emerald-100">
+                  <CalendarHeart size={20} aria-hidden="true" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-900">
+                    {profile.stage === 'pregnancy' ? 'Предполагаемая дата родов' : 'Дата рождения малыша'}
+                  </h2>
+                  <p className="mt-2 text-gray-500">
+                    {currentWeek != null
+                      ? profile.stage === 'pregnancy'
+                        ? `Сейчас ${currentWeek}-я неделя беременности. Мы показываем актуальные для неё курсы.`
+                        : `Малышу сейчас ${currentWeek} нед. Мы показываем актуальные для этого возраста курсы.`
+                      : 'Укажите дату, чтобы видеть персональные рекомендации курсов по неделе.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-wrap items-end gap-3">
+                <div className="w-full space-y-2 sm:w-72">
+                  <span className="form-label">
+                    {profile.stage === 'pregnancy' ? 'ПДР' : 'Дата рождения'}
+                  </span>
+                  {profile.stage === 'pregnancy' ? (
+                    <DatePicker
+                      value={dueDate}
+                      onChange={setDueDate}
+                      min={dueDateMin}
+                      max={dueDateMax}
+                      placeholder="Когда ждёте малыша?"
+                    />
+                  ) : (
+                    <DatePicker
+                      value={birthDate}
+                      onChange={setBirthDate}
+                      min={oneYearAgo}
+                      max={today}
+                      placeholder="Когда родился малыш?"
+                    />
+                  )}
+                </div>
+                <Button onClick={saveDate} isLoading={savingDate}>
+                  Сохранить
+                </Button>
+              </div>
+
+              {dateError && <p className="mt-4 rounded-lg bg-rose-50 px-4 py-3 text-sm text-rose-700">{dateError}</p>}
+            </Card>
+          )}
 
           <Card className="p-6">
             <h2 className="text-2xl font-semibold text-gray-900">Роль в семье</h2>

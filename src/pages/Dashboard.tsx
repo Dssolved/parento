@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   BookOpenCheck,
+  CalendarHeart,
   CheckCircle2,
   Crown,
   Library,
@@ -16,6 +17,7 @@ import Card from '../components/ui/Card'
 import { useAuth } from '../hooks/useAuth'
 import { useAllLessons, useCourses } from '../hooks/useCourses'
 import { useProgress } from '../hooks/useProgress'
+import { useRecommendedCourses } from '../hooks/useRecommendedCourses'
 import { getLessonAccessState } from '../lib/access'
 import { getCaregiverRoleLabel } from '../lib/caregiverRoles'
 import { getStageLabel, stageLabels } from '../lib/stages'
@@ -252,6 +254,8 @@ export default function Dashboard() {
   const { data: allCourses = [], isLoading: allCoursesLoading } = useCourses()
   const { data: allLessons = [], isLoading: lessonsLoading } = useAllLessons()
   const { data: progress = [] } = useProgress(user?.id ?? '')
+  const { recommended: weekRecommended, currentWeek } = useRecommendedCourses(profile, userStage)
+  const showWeekHint = currentWeek == null && (profile?.stage === 'pregnancy' || profile?.stage === 'newborn')
   const subscription = profile?.subscription ?? 'free'
   const completedLessonsCount = progress.length
   const visibleRecommendations = recommendedCourses.slice(0, 3)
@@ -372,6 +376,50 @@ export default function Dashboard() {
               Открыть Premium
             </Link>
           </div>
+        </Card>
+      )}
+
+      {currentWeek != null && weekRecommended.length > 0 && (
+        <div className="mt-6 rounded-lg border border-emerald-100 bg-emerald-50/60 p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-emerald-700">
+              <CalendarHeart size={16} aria-hidden="true" />
+              Актуально на вашей неделе
+            </p>
+            <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-sm font-medium text-emerald-700 shadow-sm">
+              {profile?.stage === 'pregnancy' ? `${currentWeek}-я неделя` : `${currentWeek} нед. малышу`}
+            </span>
+          </div>
+          <p className="mt-1 text-sm leading-6 text-gray-600">
+            Это и есть фишка Parento: контент подстраивается под ваш срок, а не сваливается общим списком.
+          </p>
+          <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {weekRecommended.slice(0, 3).map((course) => (
+              <CourseCard key={course.id} course={course} userSubscription={subscription} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {showWeekHint && (
+        <Card className="mt-6 flex flex-wrap items-center gap-4 p-5">
+          <div className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-emerald-100 bg-emerald-50 text-emerald-700">
+            <CalendarHeart size={20} aria-hidden="true" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-medium text-gray-900">Укажите дату — и Parento подстроит курсы под вашу неделю</p>
+            <p className="mt-1 text-sm text-gray-500">
+              {profile?.stage === 'pregnancy'
+                ? 'Добавьте предполагаемую дату родов в профиле.'
+                : 'Добавьте дату рождения малыша в профиле.'}
+            </p>
+          </div>
+          <Link
+            to="/profile"
+            className="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 px-4 font-medium text-gray-800 hover:bg-gray-200"
+          >
+            Указать дату
+          </Link>
         </Card>
       )}
 

@@ -4,6 +4,7 @@ import Badge from '../ui/Badge'
 import Card from '../ui/Card'
 import CourseCover from './CourseCover'
 import { getCourseAccessState } from '../../lib/access'
+import { getWeekRangeLabel } from '../../lib/weekCalculations'
 import type { Course, Subscription } from '../../types/database'
 
 interface CourseCardProps {
@@ -14,6 +15,7 @@ interface CourseCardProps {
 export default function CourseCard({ course, userSubscription }: CourseCardProps) {
   const navigate = useNavigate()
   const access = getCourseAccessState(course, userSubscription)
+  const weekRangeLabel = getWeekRangeLabel(course)
 
   return (
     <Card
@@ -25,6 +27,11 @@ export default function CourseCard({ course, userSubscription }: CourseCardProps
         <div className="flex flex-wrap items-center gap-2">
           {course.stage !== 'all' && <Badge variant={course.stage} />}
           {course.is_premium && <Badge variant="premium" />}
+          {weekRangeLabel && (
+            <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+              {weekRangeLabel}
+            </span>
+          )}
         </div>
         <div>
           <h3 className="text-lg font-semibold text-gray-900">{course.title}</h3>

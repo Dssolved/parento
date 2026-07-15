@@ -1,9 +1,10 @@
-import { ArrowLeft, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react'
+import { ArrowLeft, ArrowRight, CalendarHeart, CheckCircle2, Sparkles } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import CourseCover from '../components/course/CourseCover'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
+import DatePicker from '../components/ui/DatePicker'
 import { useAuth } from '../hooks/useAuth'
 import { useAllLessons, useCourses } from '../hooks/useCourses'
 import { getCourseAccessState, getLessonAccessState } from '../lib/access'
@@ -12,7 +13,11 @@ import { getStageLabel, stageOptions } from '../lib/stages'
 import { supabase } from '../lib/supabase'
 import type { CaregiverRole, Course, Lesson, Stage, Subscription } from '../types/database'
 
-type OnboardingStep = 'stage' | 'role' | 'start'
+type OnboardingStep = 'stage' | 'date' | 'role' | 'start'
+
+function toISODate(date: Date) {
+  return date.toISOString().slice(0, 10)
+}
 
 interface StartRecommendation {
   course: Course
@@ -52,8 +57,26 @@ export default function Onboarding() {
   const [step, setStep] = useState<OnboardingStep>('stage')
   const [selectedStage, setSelectedStage] = useState<Stage | null>(profile?.stage ?? null)
   const [selectedRole, setSelectedRole] = useState<CaregiverRole | null>(profile?.caregiver_role ?? null)
+  const [dueDate, setDueDate] = useState(profile?.due_date ?? '')
+  const [birthDate, setBirthDate] = useState(profile?.birth_date ?? '')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const today = useMemo(() => toISODate(new Date()), [])
+  const oneYearAgo = useMemo(() => {
+    const date = new Date()
+    date.setFullYear(date.getFullYear() - 1)
+    return toISODate(date)
+  }, [])
+  const dueDateMax = useMemo(() => {
+    const date = new Date()
+    date.setDate(date.getDate() + 294) // 42 недели
+    return toISODate(date)
+  }, [])
+  const dueDateMin = useMemo(() => {
+    const date = new Date()
+    date.setDate(date.getDate() - 21)
+    return toISODate(date)
+  }, [])
   const subscription = profile?.subscription ?? 'free'
   const { data: recommendedCourses = [], isLoading: coursesLoading } = useCourses(selectedStage ?? 'all')
   const { data: allLessons = [], isLoading: lessonsLoading } = useAllLessons()
@@ -64,6 +87,14 @@ export default function Onboarding() {
   const secondaryRecommendations = recommendedCourses
     .filter((course) => course.id !== startRecommendation?.course.id)
     .slice(0, 2)
+
+  const goToNextAfterStage = () => {
+    if (selectedStage === 'pregnancy' || selectedStage === 'newborn') {
+      setStep('date')
+    } else {
+      setStep('role')
+    }
+  }
 
   const saveProfile = async (role: CaregiverRole | null = selectedRole) => {
     if (!user) return
@@ -76,6 +107,8 @@ export default function Onboarding() {
       .update({
         stage: selectedStage,
         caregiver_role: role,
+        due_date: selectedStage === 'pregnancy' ? dueDate || null : null,
+        birth_date: selectedStage === 'newborn' ? birthDate || null : null,
       })
       .eq('id', user.id)
 
@@ -99,9 +132,13 @@ export default function Onboarding() {
         <p className="mt-3 text-gray-500">
           {step === 'stage'
             ? 'Сначала выберите текущий этап, чтобы Parento показывал более полезные курсы.'
-            : step === 'role'
-              ? 'Теперь уточните вашу роль. Это поможет мягче настраивать рекомендации без ограничений доступа.'
-              : 'Готово. Мы сохранили контекст и подобрали стартовый маршрут.'}
+            : step === 'date'
+              ? selectedStage === 'pregnancy'
+                ? 'Укажите предполагаемую дату родов — так мы будем показывать актуальные материалы для вашей недели беременности.'
+                : 'Укажите дату рождения малыша — так мы будем показывать актуальные материалы для его возраста.'
+              : step === 'role'
+                ? 'Теперь уточните вашу роль. Это поможет мягче настраивать рекомендации без ограничений доступа.'
+                : 'Готово. Мы сохранили контекст и подобрали стартовый маршрут.'}
         </p>
       </div>
 
@@ -132,7 +169,7 @@ export default function Onboarding() {
           </div>
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button onClick={() => setStep('role')} disabled={!selectedStage}>
+            <Button onClick={goToNextAfterStage} disabled={!selectedStage}>
               Дальше
               <ArrowRight size={18} aria-hidden="true" />
             </Button>
@@ -141,6 +178,58 @@ export default function Onboarding() {
             </Button>
           </div>
         </>
+      ) : step === 'date' ? (
+        <div className="mx-auto mt-8 max-w-md">
+          <Card className="p-6 text-left">
+            <div className="inline-flex size-11 items-center justify-center rounded-lg border bg-emerald-50 text-emerald-700 border-emerald-100">
+              <CalendarHeart size={22} aria-hidden="true" />
+            </div>
+            {selectedStage === 'pregnancy' ? (
+              <div className="mt-5 space-y-2">
+                <span className="form-label">Предполагаемая дата родов (ПДР)</span>
+                <DatePicker
+                  value={dueDate}
+                  onChange={setDueDate}
+                  min={dueDateMin}
+                  max={dueDateMax}
+                  placeholder="Когда ждёте малыша?"
+                />
+              </div>
+            ) : (
+              <div className="mt-5 space-y-2">
+                <span className="form-label">Дата рождения малыша</span>
+                <DatePicker
+                  value={birthDate}
+                  onChange={setBirthDate}
+                  min={oneYearAgo}
+                  max={today}
+                  placeholder="Когда родился малыш?"
+                />
+              </div>
+            )}
+          </Card>
+
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Button variant="secondary" onClick={() => setStep('stage')} disabled={loading}>
+              <ArrowLeft size={18} aria-hidden="true" />
+              Назад
+            </Button>
+            <Button onClick={() => setStep('role')} disabled={selectedStage === 'pregnancy' ? !dueDate : !birthDate}>
+              Дальше
+              <ArrowRight size={18} aria-hidden="true" />
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setDueDate('')
+                setBirthDate('')
+                setStep('role')
+              }}
+            >
+              Уточню позже
+            </Button>
+          </div>
+        </div>
       ) : step === 'role' ? (
         <>
           <div className="mx-auto mt-8 grid max-w-6xl gap-4 md:grid-cols-2 xl:grid-cols-5">
@@ -168,7 +257,11 @@ export default function Onboarding() {
           </div>
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button variant="secondary" onClick={() => setStep('stage')} disabled={loading}>
+            <Button
+              variant="secondary"
+              onClick={() => setStep(selectedStage === 'pregnancy' || selectedStage === 'newborn' ? 'date' : 'stage')}
+              disabled={loading}
+            >
               <ArrowLeft size={18} aria-hidden="true" />
               Назад
             </Button>

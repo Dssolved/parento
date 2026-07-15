@@ -29,6 +29,8 @@ const emptyCourseForm: CourseInsert = {
   is_premium: false,
   is_published: false,
   cover_url: '',
+  week_from: null,
+  week_to: null,
 }
 
 function getEmptyLessonForm(courseId = '', orderIndex = 1): LessonInsert {
@@ -39,6 +41,8 @@ function getEmptyLessonForm(courseId = '', orderIndex = 1): LessonInsert {
     order_index: orderIndex,
     is_premium: false,
     is_published: false,
+    week_from: null,
+    week_to: null,
   }
 }
 
@@ -50,6 +54,8 @@ function mapCourseToForm(course: Course): CourseInsert {
     is_premium: course.is_premium,
     is_published: course.is_published,
     cover_url: course.cover_url ?? '',
+    week_from: course.week_from,
+    week_to: course.week_to,
   }
 }
 
@@ -61,6 +67,8 @@ function mapLessonToForm(lesson: Lesson): LessonInsert {
     order_index: lesson.order_index,
     is_premium: lesson.is_premium,
     is_published: lesson.is_published,
+    week_from: lesson.week_from,
+    week_to: lesson.week_to,
   }
 }
 
@@ -72,6 +80,8 @@ function cleanCoursePayload(form: CourseInsert): CourseInsert {
     is_premium: form.is_premium,
     is_published: form.is_published,
     cover_url: form.cover_url?.trim() || null,
+    week_from: form.week_from,
+    week_to: form.week_to,
   }
 }
 
@@ -83,6 +93,8 @@ function cleanLessonPayload(form: LessonInsert): LessonInsert {
     order_index: Number(form.order_index),
     is_premium: form.is_premium,
     is_published: form.is_published,
+    week_from: form.week_from,
+    week_to: form.week_to,
   }
 }
 
@@ -606,6 +618,43 @@ export default function Admin() {
                     placeholder="https://..."
                   />
                   <span className="text-xs text-gray-400">Лучше всего выглядят изображения с пропорцией 16:9.</span>
+                </label>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block space-y-2">
+                  <span className="form-label">Неделя от</span>
+                  <input
+                    type="number"
+                    className="form-input"
+                    value={courseForm.week_from ?? ''}
+                    onChange={(event) =>
+                      setCourseForm((form) => ({
+                        ...form,
+                        week_from: event.target.value === '' ? null : Number(event.target.value),
+                      }))
+                    }
+                    placeholder="Например, 1"
+                  />
+                </label>
+
+                <label className="block space-y-2">
+                  <span className="form-label">Неделя до</span>
+                  <input
+                    type="number"
+                    className="form-input"
+                    value={courseForm.week_to ?? ''}
+                    onChange={(event) =>
+                      setCourseForm((form) => ({
+                        ...form,
+                        week_to: event.target.value === '' ? null : Number(event.target.value),
+                      }))
+                    }
+                    placeholder="Например, 13"
+                  />
+                  <span className="text-xs text-gray-400">
+                    Для планирования оставьте пустым. Для беременности — гестационные недели 1–42, для «до года» — недели возраста 0–52.
+                  </span>
                 </label>
               </div>
 
