@@ -1,11 +1,11 @@
 import {
   ArrowRight,
   BookOpenCheck,
+  CalendarHeart,
   CheckCircle2,
   Library,
   ShieldCheck,
   Sparkles,
-  UsersRound,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import heroImage from '../assets/parento-hero.png'
@@ -14,10 +14,14 @@ import { stageOptions } from '../lib/stages'
 import { useAuth } from '../hooks/useAuth'
 
 const benefits = [
+  {
+    title: 'Персонализация по неделям',
+    text: 'Показываем курсы, актуальные именно на вашей неделе беременности или возрасте малыша, а не общий список для всех.',
+    Icon: CalendarHeart,
+  },
   { title: 'Структурированные знания', text: 'Курсы идут по шагам, без хаоса и бесконечных вкладок.', Icon: Library },
   { title: 'Проверенные источники', text: 'Уроки опираются на книги, исследования и бережный здравый смысл.', Icon: ShieldCheck },
   { title: 'Удобный формат', text: 'Короткие текстовые уроки легко проходить в своем темпе.', Icon: BookOpenCheck },
-  { title: 'Экспертное сообщество', text: 'Место для спокойного роста и обмена опытом родителей.', Icon: UsersRound },
 ]
 
 const freeFeatures = ['Базовые курсы', 'Выбор этапа', 'Отслеживание прогресса']
@@ -40,11 +44,11 @@ export default function Landing() {
           <div className="max-w-2xl text-white">
             <p className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-medium backdrop-blur">
               <Sparkles size={16} aria-hidden="true" />
-              Курсы для родителей от планирования до первого года
+              Не общий поток статей, а маршрут под вашу неделю
             </p>
             <h1 className="mt-6 text-5xl font-semibold leading-tight sm:text-6xl lg:text-7xl">Parento</h1>
             <p className="mt-5 max-w-xl text-xl leading-8 text-white/90">
-              Осознанное родительство начинается здесь: понятные уроки, этапы развития и спокойная система знаний.
+              Показываем то, что важно именно сейчас — на вашей неделе беременности или возрасте малыша, — вместо того чтобы вы искали это сами по чатам и форумам.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
