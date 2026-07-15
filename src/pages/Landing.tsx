@@ -88,12 +88,14 @@ export default function Landing() {
           <div className="max-w-2xl text-white">
             <p className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-medium backdrop-blur">
               <Sparkles size={16} aria-hidden="true" />
-              Не общий поток статей, а маршрут под вашу неделю
+              От планирования до года — один маршрут
             </p>
             <h1 className="mt-6 text-5xl font-semibold leading-tight sm:text-6xl lg:text-7xl">Parento</h1>
             <p className="mt-2 text-lg font-medium text-emerald-300">Ваш путь родителя</p>
             <p className="mt-5 max-w-xl text-xl leading-8 text-white/90">
-              Показываем то, что важно именно сейчас — на вашей неделе беременности или возрасте малыша, — вместо того чтобы вы искали это сами по чатам и форумам.
+              Не знаете, что важно именно сейчас?
+              <br />
+              Parento показывает, что важно на вашей неделе, — и ведёт дальше шаг за шагом.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
