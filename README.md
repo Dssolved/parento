@@ -94,6 +94,19 @@ create table if not exists feedback (
 
 Полная миграция лежит в `supabase/add-feedback.sql`.
 
+Если база уже создана до появления адаптивной персонализации по неделям, выполните миграцию `supabase/add-adaptive-weeks.sql`. Она добавляет:
+
+```sql
+alter table profiles add column if not exists due_date date;
+alter table profiles add column if not exists birth_date date;
+alter table courses add column if not exists week_from integer;
+alter table courses add column if not exists week_to integer;
+alter table lessons add column if not exists week_from integer;
+alter table lessons add column if not exists week_to integer;
+```
+
+Помимо колонок, скрипт проставляет диапазоны недель демо-курсам и добавляет курсы для конкретных триместров и возрастов малыша, чтобы персонализация была наглядной. Скрипт идемпотентный — повторный запуск безопасен.
+
 ## Проверки
 
 ```bash
@@ -105,5 +118,4 @@ npm audit
 ## Документация
 
 - `docs/project-overview.md` - подробный обзор продукта, бизнес-логики, текущего состояния и roadmap.
-- `docs/pitch.md` - рабочий питч проекта и базовый анализ рынка/модели.
 - `docs/qa-checklist.md` - чеклист ручной проверки пользовательского пути и админки.
