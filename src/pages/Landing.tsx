@@ -11,6 +11,7 @@ import {
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import heroImage from '../assets/parento-hero.png'
+import WeekDemo from '../components/landing/WeekDemo'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import { stageOptions } from '../lib/stages'
@@ -149,6 +150,19 @@ export default function Landing() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="container-page py-16">
+        <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">Как это работает</p>
+            <h2 className="mt-2 text-3xl font-semibold text-gray-900 sm:text-4xl">Попробуйте прямо сейчас</h2>
+            <p className="mt-4 leading-7 text-gray-500">
+              Выберите этап и передвиньте ползунок недели — увидите, как каталог сам подсвечивает то, что важно именно на этом сроке, и убирает лишнее.
+            </p>
+          </div>
+          <WeekDemo />
         </div>
       </section>
 
