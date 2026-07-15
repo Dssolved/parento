@@ -4,14 +4,19 @@ import {
   CalendarHeart,
   CheckCircle2,
   Library,
+  Mail,
   ShieldCheck,
   Sparkles,
 } from 'lucide-react'
+import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import heroImage from '../assets/parento-hero.png'
+import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import { stageOptions } from '../lib/stages'
+import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
+import type { WaitlistSignupInsert } from '../types/database'
 
 const benefits = [
   {
@@ -31,6 +36,45 @@ export default function Landing() {
   const { user } = useAuth()
   const ctaPath = user ? '/dashboard' : '/register'
 
+  const [email, setEmail] = useState('')
+  const [waitlistStatus, setWaitlistStatus] = useState<'idle' | 'submitting' | 'success'>('idle')
+  const [waitlistError, setWaitlistError] = useState('')
+
+  const handleWaitlistSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setWaitlistError('')
+
+    const trimmedEmail = email.trim()
+
+    if (!trimmedEmail) {
+      setWaitlistError('Введите email.')
+      return
+    }
+
+    if (!isSupabaseConfigured) {
+      setWaitlistError('Supabase не настроен.')
+      return
+    }
+
+    setWaitlistStatus('submitting')
+
+    const payload: WaitlistSignupInsert = { email: trimmedEmail, source: '/landing' }
+    const { error } = await supabase.from('waitlist_signups').insert(payload)
+
+    if (error && error.code !== '23505') {
+      setWaitlistError(
+        error.message.includes('waitlist_signups')
+          ? 'Форма пока не подключена. Нужно выполнить supabase/add-waitlist.sql.'
+          : error.message,
+      )
+      setWaitlistStatus('idle')
+      return
+    }
+
+    setWaitlistStatus('success')
+    setEmail('')
+  }
+
   return (
     <div className="bg-gray-50">
       <section className="relative isolate overflow-hidden bg-gray-950">
@@ -47,6 +91,7 @@ export default function Landing() {
               Не общий поток статей, а маршрут под вашу неделю
             </p>
             <h1 className="mt-6 text-5xl font-semibold leading-tight sm:text-6xl lg:text-7xl">Parento</h1>
+            <p className="mt-2 text-lg font-medium text-emerald-300">Ваш путь родителя</p>
             <p className="mt-5 max-w-xl text-xl leading-8 text-white/90">
               Показываем то, что важно именно сейчас — на вашей неделе беременности или возрасте малыша, — вместо того чтобы вы искали это сами по чатам и форумам.
             </p>
@@ -102,6 +147,50 @@ export default function Landing() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="container-page py-16">
+        <div className="rounded-lg bg-emerald-950 p-6 text-white shadow-sm sm:p-8">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div>
+              <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-emerald-300">
+                <Mail size={16} aria-hidden="true" />
+                Не готовы начать сейчас?
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold sm:text-3xl">Оставьте email — сообщим о новых курсах</h2>
+              <p className="mt-3 max-w-2xl leading-7 text-emerald-100">
+                Пришлём короткое письмо, когда добавим новые курсы и функции вроде персонализации по неделям. Без спама.
+              </p>
+            </div>
+
+            {waitlistStatus === 'success' ? (
+              <p className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-5 py-3 text-sm font-medium text-white">
+                <CheckCircle2 size={18} aria-hidden="true" />
+                Спасибо! Вы в списке.
+              </p>
+            ) : (
+              <form onSubmit={handleWaitlistSubmit} className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                <label className="sr-only" htmlFor="waitlist-email">
+                  Email
+                </label>
+                <input
+                  id="waitlist-email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="you@example.com"
+                  className="min-h-11 w-full rounded-lg border border-white/20 bg-white/10 px-4 text-white placeholder:text-emerald-200/70 outline-none focus:border-white/50 focus:ring-4 focus:ring-white/10 sm:w-64"
+                />
+                <Button type="submit" isLoading={waitlistStatus === 'submitting'} className="shrink-0">
+                  Подписаться
+                </Button>
+              </form>
+            )}
+          </div>
+          {waitlistError && (
+            <p className="mt-3 max-w-2xl rounded-lg bg-rose-500/15 px-4 py-2 text-sm text-rose-100">{waitlistError}</p>
+          )}
         </div>
       </section>
 

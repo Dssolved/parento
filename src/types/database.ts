@@ -80,3 +80,8 @@ export interface FeedbackInsert {
   contact?: string | null
   path?: string | null
 }
+
+export interface WaitlistSignupInsert {
+  email: string
+  source?: string | null
+}

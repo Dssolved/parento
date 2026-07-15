@@ -107,6 +107,20 @@ alter table lessons add column if not exists week_to integer;
 
 Помимо колонок, скрипт проставляет диапазоны недель демо-курсам и добавляет курсы для конкретных триместров и возрастов малыша, чтобы персонализация была наглядной. Скрипт идемпотентный — повторный запуск безопасен.
 
+Если база уже создана до появления сбора email на главной странице, выполните миграцию:
+
+```sql
+create table if not exists waitlist_signups (
+  id uuid primary key default gen_random_uuid(),
+  email text not null,
+  source text,
+  created_at timestamp default now(),
+  unique (email)
+);
+```
+
+Полная миграция (вместе с RLS-политикой на анонимную вставку) лежит в `supabase/add-waitlist.sql`.
+
 ## Проверки
 
 ```bash
