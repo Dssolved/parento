@@ -1,4 +1,3 @@
-import { track } from '@vercel/analytics'
 import { ArrowLeft, Crown } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import CourseCover from '../components/course/CourseCover'
@@ -7,6 +6,7 @@ import Card from '../components/ui/Card'
 import { useAuth } from '../hooks/useAuth'
 import { useCourse, useLessons } from '../hooks/useCourses'
 import { useProgress } from '../hooks/useProgress'
+import { logEvent } from '../lib/analytics'
 import { getCourseAccessState, getLessonAccessState } from '../lib/access'
 import { getStageLabel } from '../lib/stages'
 
@@ -56,7 +56,7 @@ export default function CoursePage() {
                 </div>
                 <Link
                   to={courseAccess.ctaTo}
-                  onClick={() => track('premium_cta_clicked', { source: 'course_page', course_id: course.id })}
+                  onClick={() => logEvent('premium_cta_clicked', { source: 'course_page', course_id: course.id }, user?.id ?? null)}
                   className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-lg bg-emerald-600 px-5 font-medium text-white hover:bg-emerald-700"
                 >
                   {courseAccess.ctaLabel}

@@ -1,4 +1,3 @@
-import { track } from '@vercel/analytics'
 import { AlertTriangle, CalendarHeart, Crown, LogOut, MessageSquareText, Trash2, UserRound } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -7,6 +6,7 @@ import Card from '../components/ui/Card'
 import DatePicker from '../components/ui/DatePicker'
 import { useAuth } from '../hooks/useAuth'
 import { useProgress } from '../hooks/useProgress'
+import { logEvent } from '../lib/analytics'
 import { caregiverRoleOptions, getCaregiverRoleLabel } from '../lib/caregiverRoles'
 import { getStageLabel, stageOptions } from '../lib/stages'
 import { supabase } from '../lib/supabase'
@@ -163,7 +163,7 @@ export default function Profile() {
           {profile?.subscription === 'free' && (
             <Link
               to="/subscribe"
-              onClick={() => track('premium_cta_clicked', { source: 'profile' })}
+              onClick={() => logEvent('premium_cta_clicked', { source: 'profile' }, user.id)}
               className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-emerald-600 px-5 font-medium text-white hover:bg-emerald-700"
             >
               Перейти на Premium

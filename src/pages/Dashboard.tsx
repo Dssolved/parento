@@ -1,4 +1,3 @@
-import { track } from '@vercel/analytics'
 import {
   ArrowRight,
   BookOpenCheck,
@@ -19,6 +18,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useAllLessons, useCourses } from '../hooks/useCourses'
 import { useProgress } from '../hooks/useProgress'
 import { useRecommendedCourses } from '../hooks/useRecommendedCourses'
+import { logEvent } from '../lib/analytics'
 import { getLessonAccessState } from '../lib/access'
 import { getCaregiverRoleLabel } from '../lib/caregiverRoles'
 import { getStageLabel, stageLabels } from '../lib/stages'
@@ -372,7 +372,7 @@ export default function Dashboard() {
             </div>
             <Link
               to="/subscribe"
-              onClick={() => track('premium_cta_clicked', { source: 'dashboard_banner' })}
+              onClick={() => logEvent('premium_cta_clicked', { source: 'dashboard_banner' }, user?.id ?? null)}
               className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-medium text-white hover:bg-emerald-700 sm:w-auto sm:px-5 sm:text-base"
             >
               Открыть Premium

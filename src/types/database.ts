@@ -85,3 +85,9 @@ export interface WaitlistSignupInsert {
   email: string
   source?: string | null
 }
+
+export interface EventInsert {
+  user_id?: string | null
+  event_name: string
+  properties?: Record<string, string | number | boolean | null>
+}

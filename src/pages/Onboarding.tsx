@@ -1,4 +1,3 @@
-import { track } from '@vercel/analytics'
 import { ArrowLeft, ArrowRight, CalendarHeart, CheckCircle2, Sparkles } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -8,6 +7,7 @@ import Card from '../components/ui/Card'
 import DatePicker from '../components/ui/DatePicker'
 import { useAuth } from '../hooks/useAuth'
 import { useAllLessons, useCourses } from '../hooks/useCourses'
+import { logEvent } from '../lib/analytics'
 import { getCourseAccessState, getLessonAccessState } from '../lib/access'
 import { caregiverRoleOptions } from '../lib/caregiverRoles'
 import { getStageLabel, stageOptions } from '../lib/stages'
@@ -119,10 +119,10 @@ export default function Onboarding() {
       return
     }
 
-    track('onboarding_completed', {
+    logEvent('onboarding_completed', {
       stage: selectedStage ?? 'unknown',
       has_date: Boolean((selectedStage === 'pregnancy' && dueDate) || (selectedStage === 'newborn' && birthDate)),
-    })
+    }, user.id)
 
     await refreshProfile()
     setSelectedRole(role)

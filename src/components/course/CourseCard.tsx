@@ -1,10 +1,11 @@
-import { track } from '@vercel/analytics'
 import { Lock } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import Badge from '../ui/Badge'
 import Card from '../ui/Card'
 import CourseCover from './CourseCover'
+import { useAuth } from '../../hooks/useAuth'
 import { getCourseAccessState } from '../../lib/access'
+import { logEvent } from '../../lib/analytics'
 import { getWeekRangeLabel } from '../../lib/weekCalculations'
 import type { Course, Subscription } from '../../types/database'
 
@@ -17,12 +18,17 @@ interface CourseCardProps {
 
 export default function CourseCard({ course, userSubscription, analyticsSource }: CourseCardProps) {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const access = getCourseAccessState(course, userSubscription)
   const weekRangeLabel = getWeekRangeLabel(course)
 
   const handleClick = () => {
     if (analyticsSource) {
-      track('recommended_course_clicked', { source: analyticsSource, course_id: course.id, stage: course.stage })
+      logEvent(
+        'recommended_course_clicked',
+        { source: analyticsSource, course_id: course.id, stage: course.stage },
+        user?.id ?? null,
+      )
     }
     navigate(`/course/${course.id}`)
   }

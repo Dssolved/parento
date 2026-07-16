@@ -121,6 +121,20 @@ create table if not exists waitlist_signups (
 
 Полная миграция (вместе с RLS-политикой на анонимную вставку) лежит в `supabase/add-waitlist.sql`.
 
+Если база уже создана до появления событийной аналитики, выполните миграцию:
+
+```sql
+create table if not exists events (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references profiles on delete cascade,
+  event_name text not null,
+  properties jsonb,
+  created_at timestamp default now()
+);
+```
+
+Полная миграция (вместе с RLS-политикой на вставку) лежит в `supabase/add-events.sql`. Продуктовые события (завершение онбординга, прохождение урока, клики по рекомендациям и Premium-кнопкам) пишутся туда через `src/lib/analytics.ts`; pageview-статистика отдельно собирается через Vercel Web Analytics.
+
 ## Проверки
 
 ```bash

@@ -1,4 +1,3 @@
-import { track } from '@vercel/analytics'
 import { ArrowLeft, ArrowRight, CheckCircle2, Lock } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import MarkdownContent from '../components/course/MarkdownContent'
@@ -7,6 +6,7 @@ import Card from '../components/ui/Card'
 import { useAuth } from '../hooks/useAuth'
 import { useCourse, useLesson, useLessons } from '../hooks/useCourses'
 import { useCompleteLesson, useProgress } from '../hooks/useProgress'
+import { logEvent } from '../lib/analytics'
 import { getLessonAccessState } from '../lib/access'
 
 export default function LessonPage() {
@@ -36,11 +36,11 @@ export default function LessonPage() {
   const handleComplete = async () => {
     if (!user || !lesson) return
     await completeLesson.mutateAsync({ userId: user.id, lessonId: lesson.id })
-    track('lesson_completed', {
+    logEvent('lesson_completed', {
       lesson_id: lesson.id,
       course_id: lesson.course_id,
       is_premium: lesson.is_premium,
-    })
+    }, user.id)
   }
 
   if (isLoading || (lesson && courseLoading)) {
@@ -73,7 +73,7 @@ export default function LessonPage() {
               <p className="mt-2 text-emerald-800">{lessonAccess?.description ?? 'Этот урок доступен после перехода на Premium.'}</p>
               <Link
                 to={lessonAccess?.ctaTo ?? '/subscribe'}
-                onClick={() => track('premium_cta_clicked', { source: 'lesson_page', lesson_id: lesson.id })}
+                onClick={() => logEvent('premium_cta_clicked', { source: 'lesson_page', lesson_id: lesson.id }, user?.id ?? null)}
                 className="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald-600 px-5 font-medium text-white hover:bg-emerald-700"
               >
                 {lessonAccess?.ctaLabel ?? 'Открыть Premium'}
@@ -106,7 +106,7 @@ export default function LessonPage() {
                 to={completedActionPath}
                 onClick={() => {
                   if (nextLessonLocked) {
-                    track('premium_cta_clicked', { source: 'lesson_next_locked', lesson_id: lesson.id })
+                    logEvent('premium_cta_clicked', { source: 'lesson_next_locked', lesson_id: lesson.id }, user?.id ?? null)
                   }
                 }}
                 className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-sm font-medium text-white hover:bg-emerald-700"

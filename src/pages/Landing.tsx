@@ -1,4 +1,3 @@
-import { track } from '@vercel/analytics'
 import {
   ArrowRight,
   BookOpenCheck,
@@ -15,6 +14,7 @@ import heroImage from '../assets/parento-hero.png'
 import WeekDemo from '../components/landing/WeekDemo'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
+import { logEvent } from '../lib/analytics'
 import { stageOptions } from '../lib/stages'
 import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
@@ -244,7 +244,7 @@ export default function Landing() {
               </ul>
               <Link
                 to={user ? '/subscribe' : '/register'}
-                onClick={() => track('premium_cta_clicked', { source: 'landing_pricing' })}
+                onClick={() => logEvent('premium_cta_clicked', { source: 'landing_pricing' }, user?.id ?? null)}
                 className="mt-6 inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald-600 px-5 font-medium text-white hover:bg-emerald-700"
               >
                 Смотреть тариф
