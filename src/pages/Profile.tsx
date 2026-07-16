@@ -1,3 +1,4 @@
+import { track } from '@vercel/analytics'
 import { AlertTriangle, CalendarHeart, Crown, LogOut, MessageSquareText, Trash2, UserRound } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -162,6 +163,7 @@ export default function Profile() {
           {profile?.subscription === 'free' && (
             <Link
               to="/subscribe"
+              onClick={() => track('premium_cta_clicked', { source: 'profile' })}
               className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-emerald-600 px-5 font-medium text-white hover:bg-emerald-700"
             >
               Перейти на Premium

@@ -194,6 +194,7 @@ export default function Catalog() {
                 key={course.id}
                 course={course}
                 userSubscription={profile?.subscription ?? 'free'}
+                analyticsSource="catalog_recommended"
               />
             ))}
           </div>

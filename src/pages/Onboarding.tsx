@@ -1,3 +1,4 @@
+import { track } from '@vercel/analytics'
 import { ArrowLeft, ArrowRight, CalendarHeart, CheckCircle2, Sparkles } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -117,6 +118,11 @@ export default function Onboarding() {
       setLoading(false)
       return
     }
+
+    track('onboarding_completed', {
+      stage: selectedStage ?? 'unknown',
+      has_date: Boolean((selectedStage === 'pregnancy' && dueDate) || (selectedStage === 'newborn' && birthDate)),
+    })
 
     await refreshProfile()
     setSelectedRole(role)

@@ -1,3 +1,4 @@
+import { track } from '@vercel/analytics'
 import {
   ArrowRight,
   BookOpenCheck,
@@ -371,6 +372,7 @@ export default function Dashboard() {
             </div>
             <Link
               to="/subscribe"
+              onClick={() => track('premium_cta_clicked', { source: 'dashboard_banner' })}
               className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-medium text-white hover:bg-emerald-700 sm:w-auto sm:px-5 sm:text-base"
             >
               Открыть Premium
@@ -395,7 +397,12 @@ export default function Dashboard() {
           </p>
           <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {weekRecommended.slice(0, 3).map((course) => (
-              <CourseCard key={course.id} course={course} userSubscription={subscription} />
+              <CourseCard
+                key={course.id}
+                course={course}
+                userSubscription={subscription}
+                analyticsSource="dashboard_recommended"
+              />
             ))}
           </div>
         </div>

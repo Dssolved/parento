@@ -1,3 +1,4 @@
+import { track } from '@vercel/analytics'
 import { ArrowLeft, Crown } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import CourseCover from '../components/course/CourseCover'
@@ -55,6 +56,7 @@ export default function CoursePage() {
                 </div>
                 <Link
                   to={courseAccess.ctaTo}
+                  onClick={() => track('premium_cta_clicked', { source: 'course_page', course_id: course.id })}
                   className="inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-lg bg-emerald-600 px-5 font-medium text-white hover:bg-emerald-700"
                 >
                   {courseAccess.ctaLabel}

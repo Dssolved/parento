@@ -1,3 +1,4 @@
+import { track } from '@vercel/analytics'
 import {
   ArrowRight,
   BookOpenCheck,
@@ -243,6 +244,7 @@ export default function Landing() {
               </ul>
               <Link
                 to={user ? '/subscribe' : '/register'}
+                onClick={() => track('premium_cta_clicked', { source: 'landing_pricing' })}
                 className="mt-6 inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald-600 px-5 font-medium text-white hover:bg-emerald-700"
               >
                 Смотреть тариф
