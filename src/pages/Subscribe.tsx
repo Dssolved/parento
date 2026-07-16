@@ -1,4 +1,4 @@
-import { CheckCircle2, Crown, LockKeyhole, Sparkles } from 'lucide-react'
+import { CheckCircle2, Clock, Crown, LockKeyhole, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
@@ -79,12 +79,26 @@ export default function Subscribe() {
             <Sparkles size={17} aria-hidden="true" />
             Текущий статус
           </p>
-          <p className="mt-3 text-3xl font-semibold text-emerald-950">{isPremium ? 'Premium' : 'Free'}</p>
-          <p className="mt-2 text-sm leading-6 text-emerald-800">
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <p className="text-3xl font-semibold text-emerald-950">{isPremium ? 'Premium' : 'Free'}</p>
+            {isPremium && daysRemaining != null && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-sm font-semibold text-emerald-700 shadow-sm">
+                <Clock size={14} aria-hidden="true" />
+                {daysRemaining} {formatDaysWord(daysRemaining)}
+              </span>
+            )}
+          </div>
+          {isPremium && daysRemaining != null && (
+            <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-emerald-100">
+              <div
+                className="h-full rounded-full bg-emerald-600 transition-all"
+                style={{ width: `${Math.min(100, Math.max(0, (daysRemaining / TRIAL_DAYS) * 100))}%` }}
+              />
+            </div>
+          )}
+          <p className="mt-3 text-sm leading-6 text-emerald-800">
             {isPremium
-              ? daysRemaining != null
-                ? `Premium активен ещё ${daysRemaining} ${formatDaysWord(daysRemaining)}. Закрытые материалы открыты автоматически.`
-                : 'Premium уже активен. Закрытые материалы открываются автоматически.'
+              ? 'Закрытые материалы открыты автоматически.'
               : 'Сейчас доступны базовые курсы и открытые уроки.'}
           </p>
         </Card>
