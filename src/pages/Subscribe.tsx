@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Button from '../components/ui/Button'
 import Card from '../components/ui/Card'
 import { useAuth } from '../hooks/useAuth'
+import { pluralize } from '../lib/pluralize'
 import { supabase } from '../lib/supabase'
 
 const freeFeatures = [
@@ -20,15 +21,6 @@ const premiumFeatures = [
 ]
 
 const TRIAL_DAYS = 7
-
-function formatDaysWord(days: number) {
-  const mod10 = days % 10
-  const mod100 = days % 100
-  if (mod100 >= 11 && mod100 <= 14) return 'дней'
-  if (mod10 === 1) return 'день'
-  if (mod10 >= 2 && mod10 <= 4) return 'дня'
-  return 'дней'
-}
 
 export default function Subscribe() {
   const { user, profile, refreshProfile } = useAuth()
@@ -84,7 +76,7 @@ export default function Subscribe() {
             {isPremium && daysRemaining != null && (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-sm font-semibold text-emerald-700 shadow-sm">
                 <Clock size={14} aria-hidden="true" />
-                {daysRemaining} {formatDaysWord(daysRemaining)}
+                {daysRemaining} {pluralize(daysRemaining, ['день', 'дня', 'дней'])}
               </span>
             )}
           </div>

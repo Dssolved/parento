@@ -8,6 +8,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useProgress } from '../hooks/useProgress'
 import { logEvent } from '../lib/analytics'
 import { caregiverRoleOptions, getCaregiverRoleLabel } from '../lib/caregiverRoles'
+import { pluralizeWithCount } from '../lib/pluralize'
 import { getStageLabel, stageOptions } from '../lib/stages'
 import { supabase } from '../lib/supabase'
 import { getCurrentUserWeek } from '../lib/weekCalculations'
@@ -156,7 +157,9 @@ export default function Profile() {
             </div>
             <div className="flex items-center justify-between gap-4">
               <span className="text-gray-500">Прогресс</span>
-              <span className="font-medium text-gray-900">{progress.length} уроков</span>
+              <span className="font-medium text-gray-900">
+                {pluralizeWithCount(progress.length, ['урок', 'урока', 'уроков'])}
+              </span>
             </div>
           </div>
 

@@ -8,6 +8,7 @@ import { useCourse, useLessons } from '../hooks/useCourses'
 import { useProgress } from '../hooks/useProgress'
 import { logEvent } from '../lib/analytics'
 import { getCourseAccessState, getLessonAccessState } from '../lib/access'
+import { pluralize } from '../lib/pluralize'
 import { getStageLabel } from '../lib/stages'
 
 export default function CoursePage() {
@@ -72,7 +73,9 @@ export default function CoursePage() {
             <p className="text-sm font-medium text-gray-500">Прогресс курса</p>
             <div className="mt-3 flex items-end justify-between gap-4">
               <p className="text-3xl font-semibold text-gray-900">{progressPercent}%</p>
-              <p className="text-sm text-gray-500">{completedCount} из {lessons.length} уроков</p>
+              <p className="text-sm text-gray-500">
+                {completedCount} из {lessons.length} {pluralize(lessons.length, ['урок', 'урока', 'уроков'])}
+              </p>
             </div>
             <div className="mt-4 h-2 overflow-hidden rounded-full bg-gray-100">
               <div className="h-full rounded-full bg-emerald-600" style={{ width: `${progressPercent}%` }} />

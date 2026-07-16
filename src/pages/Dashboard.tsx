@@ -21,6 +21,7 @@ import { useRecommendedCourses } from '../hooks/useRecommendedCourses'
 import { logEvent } from '../lib/analytics'
 import { getLessonAccessState } from '../lib/access'
 import { getCaregiverRoleLabel } from '../lib/caregiverRoles'
+import { pluralize } from '../lib/pluralize'
 import { getStageLabel, stageLabels } from '../lib/stages'
 import type { Course, Lesson, Progress, Subscription } from '../types/database'
 
@@ -126,7 +127,7 @@ function buildLearningRoute(
         eyebrow: 'Продолжить обучение',
         title: activeCourse.course.title,
         description: `Следующий урок: ${nextLesson.title}. ${nextLessonAccess.description}`,
-        meta: `${activeCourse.completedCount} из ${activeCourse.lessons.length} уроков`,
+        meta: `${activeCourse.completedCount} из ${activeCourse.lessons.length} ${pluralize(activeCourse.lessons.length, ['урок', 'урока', 'уроков'])}`,
         progressPercent,
         to: nextLessonAccess.ctaTo,
         buttonText: nextLessonAccess.ctaLabel,
@@ -138,7 +139,7 @@ function buildLearningRoute(
         eyebrow: 'Продолжить обучение',
         title: activeCourse.course.title,
         description: `Следующий урок: ${nextLesson.title}`,
-        meta: `${activeCourse.completedCount} из ${activeCourse.lessons.length} уроков`,
+        meta: `${activeCourse.completedCount} из ${activeCourse.lessons.length} ${pluralize(activeCourse.lessons.length, ['урок', 'урока', 'уроков'])}`,
         progressPercent,
         to: `/lesson/${nextLesson.id}`,
         buttonText: 'Продолжить',
@@ -153,7 +154,7 @@ function buildLearningRoute(
       eyebrow: 'Курс завершён',
       title: completedCourse.course.title,
       description: 'Все уроки отмечены как пройденные. Можно повторить курс или выбрать следующий материал.',
-      meta: `${completedCourse.lessons.length} из ${completedCourse.lessons.length} уроков`,
+      meta: `${completedCourse.lessons.length} из ${completedCourse.lessons.length} ${pluralize(completedCourse.lessons.length, ['урок', 'урока', 'уроков'])}`,
       progressPercent: 100,
       to: `/course/${completedCourse.course.id}`,
       buttonText: 'Открыть курс',
@@ -174,7 +175,9 @@ function buildLearningRoute(
       description: firstAvailableLesson
         ? `Первый урок: ${firstAvailableLesson.title}`
         : 'Откройте курс и добавьте первый урок в админке, если он ещё не создан.',
-      meta: startLessons.length ? `0 из ${startLessons.length} уроков` : 'Уроки пока не добавлены',
+      meta: startLessons.length
+        ? `0 из ${startLessons.length} ${pluralize(startLessons.length, ['урок', 'урока', 'уроков'])}`
+        : 'Уроки пока не добавлены',
       progressPercent: startLessons.length ? 0 : null,
       to: firstAvailableLesson ? `/lesson/${firstAvailableLesson.id}` : `/course/${startCourse.id}`,
       buttonText: firstAvailableLesson ? 'Начать' : 'Открыть курс',
@@ -517,7 +520,7 @@ export default function Dashboard() {
                       </p>
                       <h4 className="mt-2 break-words text-lg font-semibold text-gray-900">{item.course.title}</h4>
                       <p className="mt-2 text-sm text-gray-500">
-                        {item.completedCount} из {item.lessonsCount} уроков
+                        {item.completedCount} из {item.lessonsCount} {pluralize(item.lessonsCount, ['урок', 'урока', 'уроков'])}
                       </p>
                     </div>
                     <Link
@@ -554,7 +557,7 @@ export default function Dashboard() {
                       </p>
                       <h4 className="mt-2 break-words text-lg font-semibold text-gray-900">{item.course.title}</h4>
                       <p className="mt-2 text-sm text-emerald-800">
-                        {item.completedCount} из {item.lessonsCount} уроков
+                        {item.completedCount} из {item.lessonsCount} {pluralize(item.lessonsCount, ['урок', 'урока', 'уроков'])}
                       </p>
                     </div>
                     <Link
