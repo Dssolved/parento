@@ -135,6 +135,16 @@ create table if not exists events (
 
 Полная миграция (вместе с RLS-политикой на вставку) лежит в `supabase/add-events.sql`. Продуктовые события (завершение онбординга, прохождение урока, клики по рекомендациям и Premium-кнопкам) пишутся туда через `src/lib/analytics.ts`; pageview-статистика отдельно собирается через Vercel Web Analytics.
 
+Поверх таблицы `events` есть готовые SQL-вьюхи для метрик из бизнес-плана (Activation/Engagement/Monetization) — `supabase/add-analytics-views.sql`. После выполнения смотреть метрики можно обычным select, например:
+
+```sql
+select * from v_recommended_course_clicks;
+select * from v_premium_cta_clicks;
+select * from v_activation_funnel;
+```
+
+Список всех вьюх и их назначение — в комментариях внутри самого файла.
+
 ## Проверки
 
 ```bash
