@@ -145,6 +145,14 @@ select * from v_activation_funnel;
 
 Список всех вьюх и их назначение — в комментариях внутри самого файла.
 
+Если база уже создана до появления пробного Premium-доступа, выполните миграцию:
+
+```sql
+alter table profiles add column if not exists premium_expires_at timestamp;
+```
+
+Полная миграция лежит в `supabase/add-premium-trial.sql`. Активация Premium на странице подписки выдаёт доступ на 7 дней (оплаты пока нет); по истечении срока `AuthContext` при следующей загрузке профиля тихо возвращает подписку на `free` — отдельного cron/edge-задания не требуется.
+
 ## Проверки
 
 ```bash

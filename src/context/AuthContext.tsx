@@ -43,7 +43,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    setProfile(data as Profile | null)
+    let nextProfile = data as Profile | null
+
+    const isExpiredPremium =
+      nextProfile?.subscription === 'premium' &&
+      nextProfile.premium_expires_at != null &&
+      new Date(nextProfile.premium_expires_at).getTime() < Date.now()
+
+    if (isExpiredPremium && nextProfile) {
+      const { error: downgradeError } = await supabase
+        .from('profiles')
+        .update({ subscription: 'free', premium_expires_at: null })
+        .eq('id', userId)
+
+      if (downgradeError) {
+        console.error(downgradeError.message)
+      } else {
+        nextProfile = { ...nextProfile, subscription: 'free', premium_expires_at: null }
+      }
+    }
+
+    setProfile(nextProfile)
   }, [])
 
   const syncSession = useCallback(

@@ -18,6 +18,7 @@ export interface Profile {
   subscription: Subscription
   due_date: string | null
   birth_date: string | null
+  premium_expires_at: string | null
   created_at: string
 }
 
@@ -31,6 +32,7 @@ export interface ProfileInsert {
   subscription?: Subscription
   due_date?: string | null
   birth_date?: string | null
+  premium_expires_at?: string | null
 }
 
 export interface Course {

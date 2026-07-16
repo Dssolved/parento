@@ -19,20 +19,38 @@ const premiumFeatures = [
   'Доступ к будущим Premium-разделам',
 ]
 
+const TRIAL_DAYS = 7
+
+function formatDaysWord(days: number) {
+  const mod10 = days % 10
+  const mod100 = days % 100
+  if (mod100 >= 11 && mod100 <= 14) return 'дней'
+  if (mod10 === 1) return 'день'
+  if (mod10 >= 2 && mod10 <= 4) return 'дня'
+  return 'дней'
+}
+
 export default function Subscribe() {
   const { user, profile, refreshProfile } = useAuth()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const isPremium = profile?.subscription === 'premium'
+  const daysRemaining = profile?.premium_expires_at
+    ? Math.max(0, Math.ceil((new Date(profile.premium_expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : null
 
   const activatePremium = async () => {
     if (!user) return
 
     setLoading(true)
     setError('')
+
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + TRIAL_DAYS)
+
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({ subscription: 'premium' })
+      .update({ subscription: 'premium', premium_expires_at: expiresAt.toISOString() })
       .eq('id', user.id)
 
     if (updateError) {
@@ -64,14 +82,16 @@ export default function Subscribe() {
           <p className="mt-3 text-3xl font-semibold text-emerald-950">{isPremium ? 'Premium' : 'Free'}</p>
           <p className="mt-2 text-sm leading-6 text-emerald-800">
             {isPremium
-              ? 'Premium уже активен. Закрытые материалы открываются автоматически.'
+              ? daysRemaining != null
+                ? `Premium активен ещё ${daysRemaining} ${formatDaysWord(daysRemaining)}. Закрытые материалы открыты автоматически.`
+                : 'Premium уже активен. Закрытые материалы открываются автоматически.'
               : 'Сейчас доступны базовые курсы и открытые уроки.'}
           </p>
         </Card>
       </div>
 
       <div className="mt-8 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
-        Оплата пока работает в демо-режиме: кнопка ниже просто переключает профиль на Premium без реального платежа.
+        Оплата пока не подключена: кнопка ниже просто открывает Premium-доступ бесплатно, без реального платежа.
       </div>
 
       <div className="mt-8 grid gap-5 lg:grid-cols-2">
@@ -114,7 +134,7 @@ export default function Subscribe() {
             ))}
           </ul>
           <Button className="mt-7" onClick={activatePremium} isLoading={loading} disabled={isPremium}>
-            {isPremium ? 'Premium активен' : 'Активировать Premium'}
+            {isPremium ? 'Premium активен' : `Попробовать Premium ${TRIAL_DAYS} дней бесплатно`}
           </Button>
         </Card>
       </div>
@@ -125,8 +145,9 @@ export default function Subscribe() {
           Как работает доступ
         </p>
         <p className="mt-2 text-sm leading-6 text-gray-500">
-          Если курс или урок отмечен как Premium, пользователь Free видит закрытое состояние и переход на эту страницу.
-          После активации Premium те же материалы открываются без дополнительных действий.
+          Закрытые курсы и уроки отмечены значком замка — вместо содержимого вы увидите короткое объяснение и кнопку сюда.
+          Как только откроете Premium, все такие материалы становятся доступны сразу, ничего дополнительно нажимать не нужно.
+          Пробный доступ действует {TRIAL_DAYS} дней, дальше аккаунт сам вернётся на Free — активировать заново можно в любой момент.
         </p>
       </Card>
 
